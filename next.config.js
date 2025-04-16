@@ -1,10 +1,6 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental: {
-      turbo: false, // 👈 turn off Turbopack
-    },
-  }
-  
-  module.exports = nextConfig
-  
+  // remove the experimental.turbo key entirely
+};
+
+module.exports = nextConfig;
