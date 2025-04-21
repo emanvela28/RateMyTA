@@ -11,14 +11,13 @@ const tagsList = [
   'Graded By Few Things', 'Accessible Outside Class', 'Online Savvy',
 ]
 
-export default function ReviewForm() {
-  const { id } = useParams()
+export default function ReviewForm({ taId }: { taId: number }) {
   const router = useRouter()
 
   const [formData, setFormData] = useState({
     courseCode: '',
-    rating: 5,
-    difficulty: 3,
+    rating: '',
+    difficulty: '',
     takeAgain: '',
     forCredit: '',
     usedTextbook: '',
@@ -38,7 +37,11 @@ export default function ReviewForm() {
   const handleTagToggle = (tag: string) => {
     setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.includes(tag) ? prev.tags.filter(t => t !== tag) : [...prev.tags, tag],
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter(t => t !== tag)
+        : prev.tags.length < 3
+          ? [...prev.tags, tag]
+          : prev.tags,
     }))
   }
 
@@ -47,15 +50,15 @@ export default function ReviewForm() {
     const res = await fetch(`/api/reviews`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...formData, taId: Number(id) }),
+      body: JSON.stringify({ ...formData, taId: Number(taId) }),
     })
-  
+
     if (res.ok) {
       setSubmitted(true)
       setFormData({
         courseCode: '',
-        rating: 5,
-        difficulty: 3,
+        rating: '',
+        difficulty: '',
         takeAgain: '',
         forCredit: '',
         usedTextbook: '',
@@ -64,117 +67,134 @@ export default function ReviewForm() {
         tags: [],
         comment: '',
       })
-  
-      // ✅ Redirect after a brief delay
       setTimeout(() => {
-        router.push(`/tas/${id}`)
-      }, 1500) // 1.5s delay to let user see confirmation
+        router.push(`/tas/${taId}`)
+      }, 1500)
     }
   }
-  
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow space-y-6">
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow space-y-8">
+      <h2 className="text-2xl font-bold text-center text-gray-800">Leave a Review</h2>
 
-      <select name="courseCode" value={formData.courseCode} onChange={handleChange} required className="w-full p-2 border rounded">
-        <option value="">Select Course Code</option>
-        <option value="CS101">CS101</option>
-        <option value="MATH221">MATH221</option>
-        <option value="ENG200">ENG200</option>
-      </select>
+      {/* Course Code & Ratings */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <select
+          name="courseCode"
+          value={formData.courseCode}
+          onChange={handleChange}
+          required
+          className={`w-full p-2 border rounded ${!formData.courseCode ? 'text-gray-500' : 'text-black'}`}
+        >
+          <option value="" disabled hidden>Select Course Code</option>
+          <option value="CS101">CS101</option>
+          <option value="MATH221">MATH221</option>
+          <option value="ENG200">ENG200</option>
+        </select>
 
-      <label>
-        Rating (1 = Awful, 5 = Awesome)
-        <input type="number" name="rating" min={1} max={5} value={formData.rating} onChange={handleChange} className="w-full border p-2 rounded" />
-      </label>
+        <input
+          type="number"
+          name="rating"
+          min={1}
+          max={5}
+          value={formData.rating}
+          onChange={handleChange}
+          placeholder="Rating (1–5)"
+          className="w-full p-2 border rounded"
+          required
+        />
 
-      <label>
-        Difficulty (1 = Easy, 5 = Hard)
-        <input type="number" name="difficulty" min={1} max={5} value={formData.difficulty} onChange={handleChange} className="w-full border p-2 rounded" />
-      </label>
-
-      <div className="grid grid-cols-2 gap-4">
-        <label>Take Again?
-          <select name="takeAgain" value={formData.takeAgain} onChange={handleChange} required className="w-full p-2 border rounded">
-            <option value="">Select</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </label>
-
-        <label>For Credit?
-          <select name="forCredit" value={formData.forCredit} onChange={handleChange} required className="w-full p-2 border rounded">
-            <option value="">Select</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </label>
-
-        <label>Used Textbook?
-          <select name="usedTextbook" value={formData.usedTextbook} onChange={handleChange} required className="w-full p-2 border rounded">
-            <option value="">Select</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </label>
-
-        <label>Attendance?
-          <select name="attendance" value={formData.attendance} onChange={handleChange} required className="w-full p-2 border rounded">
-            <option value="">Select</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </label>
+        <input
+          type="number"
+          name="difficulty"
+          min={1}
+          max={5}
+          value={formData.difficulty}
+          onChange={handleChange}
+          placeholder="Difficulty (1–5)"
+          className="w-full p-2 border rounded"
+          required
+        />
       </div>
 
-      <label>
-        Grade
-        <select name="grade" value={formData.grade} onChange={handleChange} required className="w-full p-2 border rounded">
-          <option value="">Select grade</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-          <option value="F">F</option>
-        </select>
-      </label>
+      {/* Select Questions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          { name: 'takeAgain', label: 'Would you take this TA again?' },
+          { name: 'forCredit', label: 'Was this class for credit?' },
+          { name: 'usedTextbook', label: 'Did the TA use a textbook?' },
+          { name: 'attendance', label: 'Was attendance mandatory?' },
+          { name: 'grade', label: 'Grade Received' },
+        ].map(({ name, label }) => (
+          <select
+            key={name}
+            name={name}
+            value={formData[name as keyof typeof formData]}
+            onChange={handleChange}
+            required
+            className={`w-full p-2 border rounded ${!formData[name as keyof typeof formData] ? 'text-gray-500' : 'text-black'}`}
+          >
+            <option value="" disabled hidden>{label}</option>
+            {name === 'grade'
+              ? ['A', 'B', 'C', 'D', 'F', 'Pass', 'Fail'].map(g => <option key={g}>{g}</option>)
+              : ['Yes', 'No'].map(opt => <option key={opt}>{opt}</option>)}
+          </select>
+        ))}
+      </div>
 
+      {/* Tags */}
       <div>
-        <p className="font-semibold mb-2">Select up to 3 tags:</p>
+        <p className="font-medium mb-2">Select up to 3 tags</p>
         <div className="flex flex-wrap gap-2">
-          {tagsList.map(tag => (
-            <button
-              type="button"
-              key={tag}
-              onClick={() => handleTagToggle(tag)}
-              className={`px-3 py-1 rounded-full text-sm border ${
-                formData.tags.includes(tag) ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'
-              }`}
-              disabled={formData.tags.length >= 3 && !formData.tags.includes(tag)}
-            >
-              {tag}
-            </button>
-          ))}
+          {tagsList.map(tag => {
+            const selected = formData.tags.includes(tag)
+            return (
+              <button
+                type="button"
+                key={tag}
+                onClick={() => handleTagToggle(tag)}
+                className={`px-3 py-1 rounded-full text-sm border transition duration-150 ${
+                  selected
+                    ? 'bg-blue-100 text-blue-700 border-blue-400 hover:bg-blue-200'
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                }`}                
+                disabled={formData.tags.length >= 3 && !selected}
+              >
+                {tag}
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      <textarea
-        name="comment"
-        value={formData.comment}
-        onChange={handleChange}
-        placeholder="What do you want others to know about this TA?"
-        className="w-full p-3 border rounded"
-        rows={4}
-        maxLength={350}
-        required
-      />
+      {/* Comment Box */}
+      <div>
+        <textarea
+          name="comment"
+          value={formData.comment}
+          onChange={handleChange}
+          placeholder="What do you want others to know about this TA?"
+          className="w-full p-3 border rounded text-sm"
+          rows={5}
+          maxLength={350}
+          required
+        />
+        <p className="text-sm text-gray-500 text-right mt-1">
+          {formData.comment.length}/350 characters
+        </p>
+      </div>
 
-      <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-        Submit Rating
-      </button>
+      {/* Submit */}
+      <div className="flex justify-center">
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
+        >
+          Submit Rating
+        </button>
+      </div>
 
-
-      {submitted && <p className="text-green-600 font-semibold">✅ Review submitted successfully!</p>}
+      {submitted && <p className="text-green-600 font-semibold text-center">✅ Review submitted successfully!</p>}
     </form>
   )
 }

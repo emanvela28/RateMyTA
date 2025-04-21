@@ -48,7 +48,7 @@ export default function Navbar() {
           <Link href="/about" className="hover:text-blue-600 transition">
             About
           </Link>
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/auth/signin" className="text-blue-600 hover:underline">
             Log in
           </Link>
         </nav>

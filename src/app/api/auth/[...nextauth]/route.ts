@@ -1,8 +1,8 @@
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { authOptions } from "@/lib/auth";
+// /app/api/auth/[...nextauth]/route.ts
 
-const handler = NextAuth(authOptions);
+import NextAuth from "next-auth"
+import { authOptions } from "@/lib/auth" // ✅ use the shared, complete auth config
 
-export { handler as GET, handler as POST };
+const handler = NextAuth(authOptions)
+
+export { handler as GET, handler as POST }

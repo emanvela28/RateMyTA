@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import TASectionClient from '@/components/TASectionClient'
 import NavButtons from '@/components/NavButtons'
-
+import Link from 'next/link'
 
 export default async function SchoolPage({ params }: { params: { id: string } }) {
   const schoolId = Number(params.id)
@@ -25,7 +25,17 @@ export default async function SchoolPage({ params }: { params: { id: string } })
         <h1 className="text-4xl font-bold text-center text-gray-900 mb-2">{school.name}</h1>
         <p className="text-center text-gray-600 mb-6">{school.location}</p>
 
-        {/* Inject the client component for dynamic TA search */}
+        {/* 💬 Add a button to leave a review */}
+        <div className="flex justify-center mb-6">
+          <Link
+            href={`/schools/${school.id}/new-ta`}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition"
+          >
+            Add a TA & Review
+          </Link>
+        </div>
+
+        {/* TA List and Search */}
         <TASectionClient schoolId={school.id} tas={school.tas} />
         <NavButtons />
       </div>
