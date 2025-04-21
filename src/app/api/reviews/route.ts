@@ -1,12 +1,20 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { authOptions } from '@/lib/auth' // ✅ proper location
+import { getServerSession } from 'next-auth'
 
 export async function POST(req: Request) {
+  const session = await getServerSession(authOptions)
+
+  // 🛑 Block unauthenticated users
+  if (!session || !session.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await req.json()
     const {
       taId,
-      studentName,
       rating,
       difficulty,
       comment,
@@ -19,7 +27,7 @@ export async function POST(req: Request) {
       tags,
     } = body
 
-    // Validation
+    // 🧪 Basic validation
     if (
       !taId ||
       !rating ||
@@ -36,12 +44,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 })
     }
 
-    // Convert string fields like "Yes"/"No" to booleans
+    // ✅ Lookup user from session
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 403 })
+    }
+
+    // 🔄 Convert "Yes"/"No" to boolean
     const parseBool = (val: string) => val.toLowerCase() === 'yes'
 
     const review = await prisma.review.create({
       data: {
         taId: Number(taId),
+        userId: user.id, // ✅ link review to user
         rating: Number(rating),
         difficulty: Number(difficulty),
         comment,
@@ -51,7 +69,7 @@ export async function POST(req: Request) {
         forCredit: parseBool(forCredit),
         usedTextbook: parseBool(usedTextbook),
         attendance: parseBool(attendance),
-        tags: JSON.stringify(tags),
+        tags: tags.join(','), // ← make sure you're storing as a string
       },
     })
 

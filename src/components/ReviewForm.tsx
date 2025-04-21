@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 const tagsList = [
   'Tough Grader', 'Get Ready To Read', 'Participation Matters', 'Extra Credit',
@@ -13,6 +14,11 @@ const tagsList = [
 
 export default function ReviewForm({ taId }: { taId: number }) {
   const router = useRouter()
+  const { data: session, status } = useSession()
+  const { id: schoolId } = useParams()
+
+  const [schoolDomain, setSchoolDomain] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
 
   const [formData, setFormData] = useState({
     courseCode: '',
@@ -26,8 +32,6 @@ export default function ReviewForm({ taId }: { taId: number }) {
     tags: [] as string[],
     comment: '',
   })
-
-  const [submitted, setSubmitted] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -73,24 +77,60 @@ export default function ReviewForm({ taId }: { taId: number }) {
     }
   }
 
+  const userDomain = session?.user?.email?.split('@')[1]?.toLowerCase()
+  const canSubmit = session && userDomain && schoolDomain && userDomain === schoolDomain
+
+  useEffect(() => {
+    const fetchSchoolDomain = async () => {
+      try {
+        const res = await fetch(`/api/tas/${taId}/school`)
+        if (!res.ok) throw new Error('Failed to fetch school domain')
+        const data = await res.json()
+        setSchoolDomain(data.domain)
+      } catch (err) {
+        console.error('Error fetching school domain:', err)
+        setSchoolDomain(null) // Or maybe set an error state
+      }
+    }
+    fetchSchoolDomain()
+  }, [taId])
+  
+
+  if (status === 'loading' || !schoolDomain) return <p>Loading...</p>
+  if (!session) return <p className="text-center text-red-600">You must be signed in to leave a review.</p>
+  if (!canSubmit) return (
+    <p className="text-center text-red-600">
+      You can only leave reviews for TAs from your school.
+    </p>
+  )
+
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow space-y-8">
       <h2 className="text-2xl font-bold text-center text-gray-800">Leave a Review</h2>
 
       {/* Course Code & Ratings */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <select
-          name="courseCode"
-          value={formData.courseCode}
-          onChange={handleChange}
-          required
-          className={`w-full p-2 border rounded ${!formData.courseCode ? 'text-gray-500' : 'text-black'}`}
-        >
-          <option value="" disabled hidden>Select Course Code</option>
-          <option value="CS101">CS101</option>
-          <option value="MATH221">MATH221</option>
-          <option value="ENG200">ENG200</option>
-        </select>
+      <input
+        type="text"
+        name="courseCode"
+        value={formData.courseCode}
+        onChange={(e) => {
+          const rawValue = e.target.value
+          const formatted = rawValue
+            .toUpperCase()
+            .replace(/([A-Z]+)\s*([0-9]+)/, '$1$2')
+
+          setFormData((prevData) => ({
+            ...prevData,
+            courseCode: formatted,
+          }))
+        }}
+        required
+        placeholder="Enter Course Code (e.g., CSE120)"
+        className={`w-full p-2 border rounded ${!formData.courseCode ? 'text-gray-500' : 'text-black'}`}
+      />
+
+
 
         <input
           type="number"

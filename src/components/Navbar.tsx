@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import UserMenu from './UserMenu'
 
 export default function Navbar() {
   const [query, setQuery] = useState('')
@@ -40,17 +41,15 @@ export default function Navbar() {
             Search
           </button>
         </form>
-
-        <nav className="space-x-4 text-gray-700">
+        <nav className="flex items-center space-x-6 text-sm font-medium text-gray-700">
           <Link href="/schools" className="hover:text-blue-600 transition">
             Schools
           </Link>
           <Link href="/about" className="hover:text-blue-600 transition">
             About
           </Link>
-          <Link href="/auth/signin" className="text-blue-600 hover:underline">
-            Log in
-          </Link>
+
+          <UserMenu />
         </nav>
       </div>
     </header>

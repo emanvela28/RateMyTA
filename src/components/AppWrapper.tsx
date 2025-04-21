@@ -1,13 +1,16 @@
 'use client'
 
+import { SessionProvider } from 'next-auth/react'
 import { LoadingProvider, useLoading } from './LoadingContext'
 
 export default function AppWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <LoadingProvider>
-      <LoadingOverlay />
-      {children}
-    </LoadingProvider>
+    <SessionProvider>
+      <LoadingProvider>
+        <LoadingOverlay />
+        {children}
+      </LoadingProvider>
+    </SessionProvider>
   )
 }
 

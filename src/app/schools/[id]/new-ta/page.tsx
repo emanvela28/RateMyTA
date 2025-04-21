@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import NavButtons from '@/components/NavButtons'
 
 const TAGS = [
@@ -16,6 +17,13 @@ export default function NewTAReview() {
   const { id: schoolId } = useParams() as { id: string }
   const router = useRouter()
 
+  const { data: session, status } = useSession()
+  const [schoolDomain, setSchoolDomain] = useState<string | null>(null)
+  const [schoolName, setSchoolName] = useState<string | null>(null)
+  const [userSchoolName, setUserSchoolName] = useState<string | null>(null)
+  const [userSchoolId, setUserSchoolId] = useState<number | null>(null)
+
+
   const [form, setForm] = useState({
     name: '',
     department: '',
@@ -29,7 +37,30 @@ export default function NewTAReview() {
     grade: '',
     tags: [] as string[],
     comment: '',
-  })
+  })  
+
+  // Extract user email domain
+  const userDomain = session?.user?.email?.split('@')[1]?.toLowerCase()
+  const canSubmit = session && userDomain && schoolDomain && userDomain === schoolDomain
+
+  useEffect(() => {
+    const fetchSchool = async () => {
+      const res = await fetch(`/api/schools/${schoolId}/domain`)
+      const data = await res.json()
+      setSchoolDomain(data.domain)
+      setSchoolName(data.name)
+  
+      // Fetch the user's actual school (by domain)
+      if (userDomain) {
+        const domainRes = await fetch(`/api/schools/domain/${userDomain}`)
+        const domainData = await domainRes.json()
+        setUserSchoolName(domainData.name)
+        setUserSchoolId(domainData.id)
+      }
+    }
+    fetchSchool()
+  }, [schoolId, userDomain])
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -63,6 +94,68 @@ export default function NewTAReview() {
       console.error('❌ TA creation failed')
     }
   }
+
+  if (status === 'loading' || !schoolDomain) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600 border-opacity-50 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading page...</p>
+        </div>
+      </main>
+    )
+  }
+  
+  if (!session) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="bg-white border shadow-lg rounded-xl p-8 max-w-md w-full text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            You must be signed in to submit a TA and review.
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Please log in using your school email to continue.
+          </p>
+          <a
+            href="/api/auth/signin"
+            className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          >
+            Log In
+          </a>
+        </div>
+      </main>
+    )
+  }  
+
+  if (!canSubmit) {
+    const userSchoolSlug = userDomain?.split('.')[0] 
+    const userSchoolUrl = `/schools/${userSchoolId}`
+  
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="bg-white border shadow-lg rounded-xl p-8 max-w-md w-full text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            You can only submit reviews for your own school.
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Your email is associated with{' '}
+            <strong className="text-blue-700">{userSchoolName ?? userDomain}</strong>. <br />
+            Please visit your school’s page to leave a review.
+          </p>
+          {userSchoolId && (
+            <a
+              href={`/schools/${userSchoolId}`}
+              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+            >
+              Go to My School Page
+            </a>
+          )}
+        </div>
+      </main>
+    )
+  }
+  
+  
 
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">

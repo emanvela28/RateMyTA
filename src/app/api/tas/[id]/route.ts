@@ -1,13 +1,14 @@
-// src/app/api/tas/[id]/route.ts
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: { id: string } }
 ) {
+  const { id } = context.params
+
   const ta = await prisma.tA.findUnique({
-    where: { id: Number(params.id) },
+    where: { id: Number(id) },
     select: {
       id: true,
       name: true,
