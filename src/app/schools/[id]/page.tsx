@@ -3,8 +3,10 @@ import TASectionClient from '@/components/TASectionClient'
 import NavButtons from '@/components/NavButtons'
 import Link from 'next/link'
 
-export default async function SchoolPage({ params }: { params: { id: string } }) {
-  const schoolId = Number(params.id)
+export default async function SchoolPage(props: { params: { id: string } }) {
+  const { id } = props.params; // ✅ unwrap safely
+  const schoolId = Number(id);
+
 
   const school = await prisma.school.findUnique({
     where: { id: schoolId },

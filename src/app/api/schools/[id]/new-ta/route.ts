@@ -21,6 +21,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
     attendance,
     grade,
     tags,
+    pending,
   } = body
 
   if (!schoolId || !name || !department || !courseCode || !comment) {
@@ -33,6 +34,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
       data: {
         name,
         department,
+        pending: pending ?? true, // ✅ THIS LINE
         school: {
           connect: { id: schoolId },
         },
@@ -52,6 +54,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
         },
       },
     })
+    
 
     // ✅ Return full TA object so frontend can access `ta.id`
     return NextResponse.json({ success: true, ta: newTA }, { status: 201 })

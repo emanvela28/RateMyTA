@@ -8,25 +8,67 @@ type Props = {
   params: { id: string }
 }
 
-export default async function TAPage({ params }: Props) {
-  const taId = Number(params.id)
+export default async function TAPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const taId = Number(id);
 
   const ta = await prisma.tA.findUnique({
     where: { id: taId },
-    include: {
-      school: true,
-      reviews: true,
+    select: {
+      id: true,
+      name: true,
+      department: true,
+      pending: true,
+      schoolId: true,
+      school: {
+        select: {
+          name: true,
+          location: true,
+        },
+      },
+      reviews: {
+        select: {
+          id: true,
+          courseCode: true,
+          rating: true,
+          difficulty: true,
+          takeAgain: true,
+          forCredit: true,
+          usedTextbook: true,
+          attendance: true,
+          grade: true,
+          tags: true,
+          comment: true,
+          createdAt: true,
+          taId: true,
+          userId: true,
+        },
+      },
     },
-  })
+  });
+  
 
-
-  if (!ta) {
+  if (!ta || ta.pending) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 text-lg">TA not found.</p>
+      <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
+        <div className="bg-white shadow-md rounded-xl p-8 max-w-md text-center space-y-4">
+          <h1 className="text-2xl font-bold text-gray-800">
+            This TA profile is pending approval.
+          </h1>
+          <p className="text-gray-600 text-sm">
+            Once it's approved by an admin, the reviews and profile will be visible.
+          </p>
+  
+          <div className="mt-6">
+            <NavButtons schoolId={ta?.schoolId} />
+          </div>
+        </div>
       </main>
-    )
+    );
   }
+  
+  
+  
 
   const reviewCount = ta.reviews.length
   const averageRating = reviewCount
@@ -35,13 +77,12 @@ export default async function TAPage({ params }: Props) {
   const averageDifficulty = reviewCount
     ? (ta.reviews.reduce((sum, r) => sum + r.difficulty, 0) / reviewCount).toFixed(1)
     : 'N/A'
-    const wouldTakeAgainCount = ta.reviews.filter(
-      (r) => r.takeAgain === true
-    ).length
-    
-    const wouldTakeAgainPercent =
-      reviewCount > 0 ? Math.round((wouldTakeAgainCount / reviewCount) * 100) : 'N/A'
-    
+  const wouldTakeAgainCount = ta.reviews.filter(
+    (r) => r.takeAgain === true
+  ).length
+
+  const wouldTakeAgainPercent =
+    reviewCount > 0 ? Math.round((wouldTakeAgainCount / reviewCount) * 100) : 'N/A'
 
   // For filtering (in a real app you'd store selected filter in state)
   const courseCodes = [...new Set(ta.reviews.map((r) => r.courseCode))]

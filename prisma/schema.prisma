@@ -24,10 +24,12 @@ model TA {
   id         Int      @id @default(autoincrement())
   name       String
   department String
+  pending    Boolean  @default(true)
   school     School   @relation(fields: [schoolId], references: [id])
   schoolId   Int
   reviews    Review[]
 }
+
 
 model Review {
   id           Int      @id @default(autoincrement())
