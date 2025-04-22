@@ -1,65 +1,116 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { moderateName, moderateText } from '@/lib/moderation'
 
-export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params
-  const schoolId = Number(id)
+// Update: Explicitly define valid as a union to avoid TS 2367
+type ModerationResult = { valid: true | false | 'flagged'; reason?: string }
 
-  const body = await req.json()
-  console.log('📦 Incoming request body:', body)
+interface ReviewData {
+  rating: number
+  difficulty: number
+  comment: string
+  courseCode: string
+  takeAgain: boolean
+  forCredit: boolean
+  usedTextbook: boolean
+  attendance: boolean
+  grade: string
+  tags: string[]
+  taId: number
+}
 
-  const {
-    name,
-    department,
-    rating,
-    difficulty,
-    comment,
-    courseCode,
-    takeAgain,
-    forCredit,
-    usedTextbook,
-    attendance,
-    grade,
-    tags,
-    pending,
-  } = body
-
-  if (!schoolId || !name || !department || !courseCode || !comment) {
-    console.log('❌ Missing required fields')
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-  }
-
+export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
+    const schoolId = Number(params.id)
+    const body = await req.json()
+
+    console.log('📦 Incoming request body:', body)
+
+    const requiredFields = ['name', 'department', 'courseCode', 'comment', 'rating', 'difficulty']
+    const missingFields = requiredFields.filter(field => !body[field])
+
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        { error: `Missing required fields: ${missingFields.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Run moderation (cast to avoid TS complaints)
+    const nameCheck = moderateName(body.name) as ModerationResult;
+    const commentCheck = await moderateText(body.comment) as ModerationResult;
+    
+    console.log('Moderation results:', {
+      name: { value: body.name, result: nameCheck },
+      comment: { value: body.comment, result: commentCheck }
+    });
+
+    // Soft moderation: mark as pending if flagged
+    const isPending = (
+      nameCheck.valid === 'flagged' ||
+      commentCheck.valid === 'flagged' ||
+      body.pending === true // Fallback to incoming value
+    );
+
+    console.log('Final pending decision:', isPending);
+
+    // Create the TA
     const newTA = await prisma.tA.create({
       data: {
-        name,
-        department,
-        pending: pending ?? true, // ✅ THIS LINE
-        school: {
-          connect: { id: schoolId },
-        },
-        reviews: {
-          create: {
-            rating: Number(rating),
-            difficulty: Number(difficulty),
-            comment,
-            courseCode,
-            takeAgain: takeAgain.toLowerCase() === 'yes',
-            forCredit: forCredit.toLowerCase() === 'yes',
-            usedTextbook: usedTextbook.toLowerCase() === 'yes',
-            attendance: attendance.toLowerCase() === 'yes',
-            grade,
-            tags: JSON.stringify(tags),
-          },
-        },
-      },
+        name: body.name,
+        department: body.department,
+        pending: isPending,
+        schoolId: schoolId
+      }
     })
-    
 
-    // ✅ Return full TA object so frontend can access `ta.id`
-    return NextResponse.json({ success: true, ta: newTA }, { status: 201 })
-  } catch (err) {
-    console.error('🔥 Error creating TA and review:', err)
-    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
+    const dbResult = await prisma.$queryRaw<{pending: number}>`
+    SELECT pending FROM TA WHERE id = ${newTA.id}
+    `;
+    console.log('Database verification:', {
+      prismaValue: newTA.pending,
+      rawValue: dbResult.pending,
+      type: typeof dbResult.pending
+    });
+    
+    // Create the review
+    const newReview = await prisma.review.create({
+      data: {
+        rating: Number(body.rating),
+        difficulty: Number(body.difficulty),
+        comment: body.comment,
+        courseCode: body.courseCode,
+        takeAgain: body.takeAgain?.toLowerCase() === 'yes',
+        forCredit: body.forCredit?.toLowerCase() === 'yes',
+        usedTextbook: body.usedTextbook?.toLowerCase() === 'yes',
+        attendance: body.attendance?.toLowerCase() === 'yes',
+        grade: body.grade,
+        tags: JSON.stringify(body.tags || []),
+        taId: newTA.id
+      }
+    })
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          ta: newTA,
+          review: newReview
+        },
+        message: isPending
+          ? 'Submission received and pending approval'
+          : 'Submission successful'
+      },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error('🔥 Error creating TA and review:', error)
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Failed to process your submission'
+      },
+      { status: 500 }
+    )
   }
 }

@@ -3,15 +3,34 @@ import TASectionClient from '@/components/TASectionClient'
 import NavButtons from '@/components/NavButtons'
 import Link from 'next/link'
 
-export default async function SchoolPage(props: { params: { id: string } }) {
-  const { id } = props.params; // ✅ unwrap safely
-  const schoolId = Number(id);
+type PageProps = {
+  params: {
+    id: string
+  }
+}
 
+export default async function SchoolPage({ params }: PageProps) {
+  // Await the params promise before accessing its properties
+  const { id } = await params
+  const schoolId = Number(id)
+
+  if (isNaN(schoolId)) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500 text-lg">Invalid school ID.</p>
+      </main>
+    )
+  }
 
   const school = await prisma.school.findUnique({
     where: { id: schoolId },
-    include: { tas: true },
+    include: {
+      tas: {
+        where: { pending: false }, // ✅ Only fetch approved TAs
+      },
+    },
   })
+  
 
   if (!school) {
     return (
@@ -27,7 +46,6 @@ export default async function SchoolPage(props: { params: { id: string } }) {
         <h1 className="text-4xl font-bold text-center text-gray-900 mb-2">{school.name}</h1>
         <p className="text-center text-gray-600 mb-6">{school.location}</p>
 
-        {/* 💬 Add a button to leave a review */}
         <div className="flex justify-center mb-6">
           <Link
             href={`/schools/${school.id}/new-ta`}
@@ -37,7 +55,6 @@ export default async function SchoolPage(props: { params: { id: string } }) {
           </Link>
         </div>
 
-        {/* TA List and Search */}
         <TASectionClient schoolId={school.id} tas={school.tas} />
         <NavButtons />
       </div>

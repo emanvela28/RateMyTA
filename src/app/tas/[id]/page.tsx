@@ -2,52 +2,35 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import NavButtons from '@/components/NavButtons'
 import ReviewList from '@/components/ReviewList'
+import type { TA, Review, School } from '@prisma/client'
 
+type FullTA = {
+  id: number
+  name: string
+  department: string
+  pending: boolean
+  schoolId: number
+  school: School
+  reviews: Review[]
+}
 
 type Props = {
   params: { id: string }
 }
 
-export default async function TAPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const taId = Number(id);
+export default async function TAPage({ params }: Props) {
+  // Await the params promise before accessing its properties
+  const { id } = await params
+  const taId = Number(id)
 
   const ta = await prisma.tA.findUnique({
     where: { id: taId },
-    select: {
-      id: true,
-      name: true,
-      department: true,
-      pending: true,
-      schoolId: true,
-      school: {
-        select: {
-          name: true,
-          location: true,
-        },
-      },
-      reviews: {
-        select: {
-          id: true,
-          courseCode: true,
-          rating: true,
-          difficulty: true,
-          takeAgain: true,
-          forCredit: true,
-          usedTextbook: true,
-          attendance: true,
-          grade: true,
-          tags: true,
-          comment: true,
-          createdAt: true,
-          taId: true,
-          userId: true,
-        },
-      },
+    include: {
+      school: true,
+      reviews: true,
     },
-  });
+  }) as FullTA
   
-
   if (!ta || ta.pending) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
@@ -58,17 +41,14 @@ export default async function TAPage({ params }: { params: Promise<{ id: string 
           <p className="text-gray-600 text-sm">
             Once it's approved by an admin, the reviews and profile will be visible.
           </p>
-  
+
           <div className="mt-6">
             <NavButtons schoolId={ta?.schoolId} />
           </div>
         </div>
       </main>
-    );
+    )
   }
-  
-  
-  
 
   const reviewCount = ta.reviews.length
   const averageRating = reviewCount
@@ -77,17 +57,12 @@ export default async function TAPage({ params }: { params: Promise<{ id: string 
   const averageDifficulty = reviewCount
     ? (ta.reviews.reduce((sum, r) => sum + r.difficulty, 0) / reviewCount).toFixed(1)
     : 'N/A'
-  const wouldTakeAgainCount = ta.reviews.filter(
-    (r) => r.takeAgain === true
-  ).length
-
+  const wouldTakeAgainCount = ta.reviews.filter((r) => r.takeAgain).length
   const wouldTakeAgainPercent =
     reviewCount > 0 ? Math.round((wouldTakeAgainCount / reviewCount) * 100) : 'N/A'
 
-  // For filtering (in a real app you'd store selected filter in state)
   const courseCodes = [...new Set(ta.reviews.map((r) => r.courseCode))]
 
-  // Rating distribution (1–5)
   const ratingDist = [1, 2, 3, 4, 5].map((score) => ({
     score,
     count: ta.reviews.filter((r) => r.rating === score).length,
@@ -138,10 +113,8 @@ export default async function TAPage({ params }: { params: Promise<{ id: string 
                 <div className="w-full bg-gray-200 h-3 rounded">
                   <div
                     className="bg-blue-600 h-3 rounded"
-                    style={{
-                      width: `${(r.count / reviewCount) * 100 || 0}%`,
-                    }}
-                  ></div>
+                    style={{ width: `${(r.count / reviewCount) * 100 || 0}%` }}
+                  />
                 </div>
                 <span className="ml-2 text-sm text-gray-500">{r.count}</span>
               </div>
