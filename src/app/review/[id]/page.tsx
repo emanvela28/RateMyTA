@@ -46,7 +46,17 @@ export default async function ReviewDetailPage({ params }: PageProps) {
           <p><strong>Grade Received:</strong> {review.grade}</p>
 
           <p><strong>Tags:</strong> {
-            JSON.parse(review.tags || '[]').join(', ') || 'None'
+            (() => {
+              try {
+                const parsed = JSON.parse(review.tags || '[]');
+                if (Array.isArray(parsed)) {
+                  return parsed.length > 0 ? parsed.join(', ') : 'None';
+                }
+                return parsed || 'None'; // fallback if somehow not an array but a string
+              } catch {
+                return review.tags || 'None'; // fallback if parse fails
+              }
+            })()
           }</p>
 
           <div>
