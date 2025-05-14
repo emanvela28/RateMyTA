@@ -1,28 +1,46 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { useLoading } from './LoadingContext'
 
 export default function RouteLoader() {
+  const [isLoading, setIsLoading] = useState(false)
   const pathname = usePathname()
-  const { loading, setLoading } = useLoading()
 
   useEffect(() => {
-    setLoading(true)
+    setIsLoading(true)
 
     const timeout = setTimeout(() => {
-      setLoading(false)
-    }, 500) // show spinner for 500ms, tweak as needed
+      setIsLoading(false)
+    }, 500) // ⏱ tweak as needed
 
     return () => clearTimeout(timeout)
   }, [pathname])
 
-  if (!loading) return null
+  if (!isLoading) return null
 
   return (
-    <div className="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
-      <img src="/pencil.gif" alt="Loading..." className="w-16 h-16" />
+    <div className="fixed inset-0 bg-white bg-opacity-60 z-50 flex items-center justify-center">
+      <svg
+        className="animate-spin h-10 w-10 text-blue-500"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        >
+        <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+        />
+        <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+        />
+        </svg>
     </div>
   )
 }

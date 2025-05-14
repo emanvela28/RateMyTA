@@ -11,22 +11,28 @@ export default function Navbar() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-  
+
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`)
-      setQuery('') // ✅ clear the input after navigating
+      setQuery('')
     }
   }
-  
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-blue-600">
-          RateMyTA
-        </Link>
+      <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between relative">
+        {/* Left: Logo */}
+        <div className="flex-shrink-0">
+          <Link href="/" className="text-xl font-bold text-blue-600">
+            RateMyTA
+          </Link>
+        </div>
 
-        <form onSubmit={handleSearch} className="flex space-x-2">
+        {/* Center: Search */}
+        <form
+          onSubmit={handleSearch}
+          className="absolute left-1/2 transform -translate-x-1/2 flex space-x-2"
+        >
           <input
             type="text"
             placeholder="Search schools or TAs"
@@ -41,14 +47,15 @@ export default function Navbar() {
             Search
           </button>
         </form>
+
+        {/* Right: Navigation */}
         <nav className="flex items-center space-x-6 text-sm font-medium text-gray-700">
-          <Link href="/schools" className="hover:text-blue-600 transition">
-            Schools
+          <Link href="/reviews" className="font-medium hover:underline">
+            Reviews
           </Link>
           <Link href="/about" className="hover:text-blue-600 transition">
             About
           </Link>
-
           <UserMenu />
         </nav>
       </div>

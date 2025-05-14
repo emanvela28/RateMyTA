@@ -45,7 +45,7 @@ model Review {
   comment      String
   createdAt    DateTime @default(now())
 
-  ta   TA  @relation(fields: [taId], references: [id])
+  ta   TA  @relation(fields: [taId], references: [id], onDelete: Cascade)
   taId Int
 
   user   User?   @relation(fields: [userId], references: [id])
@@ -102,3 +102,22 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model SiteReview {
+  id                 Int       @id @default(autoincrement())
+  bugEncountered     Boolean
+  bugDetails         String?
+  easeOfUse          Int
+  experience         Int
+  additionalFeedback String?
+  createdAt          DateTime  @default(now())
+}
+
+model Report {
+  id        Int      @id @default(autoincrement())
+  targetType String   // "TA" or "Review"
+  targetId   Int
+  reason     String?
+  createdAt  DateTime @default(now())
+}
+

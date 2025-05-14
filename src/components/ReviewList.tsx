@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import LinkWithLoading from '@/components/LinkWithLoading' // ✅ Import it
+import ReportButton from '@/components/ReportButton'
 
 type Review = {
   id: number
@@ -51,15 +51,17 @@ export default function ReviewList({ reviews, courseCodes }: Props) {
         <ul className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
           {filteredReviews.map((review) => (
             <li key={review.id}>
-              <LinkWithLoading href={`/review/${review.id}`}>
-                <div className="bg-gray-100 rounded-md p-4 hover:bg-gray-200 transition cursor-pointer">
+              <div className="relative bg-gray-100 rounded-md p-4 hover:bg-gray-200 transition cursor-pointer">
                   <p className="text-gray-800 font-semibold">
                     Rating: {review.rating}/5 – Difficulty: {review.difficulty}/5
                   </p>
                   <p className="text-gray-600 italic mb-1">{review.comment}</p>
                   <p className="text-sm text-gray-500">Course: {review.courseCode}</p>
+
+                <div className="absolute top-2 right-2">
+                  <ReportButton targetType="Review" targetId={review.id} />
                 </div>
-              </LinkWithLoading>
+              </div>
             </li>
           ))}
         </ul>

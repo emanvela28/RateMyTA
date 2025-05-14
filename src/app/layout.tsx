@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+'use client'
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import AppWrapper from "@/components/AppWrapper"; // 👈 Wraps RouteLoader
-import RouteLoader from '../components/RouteLoader'
+import RouteLoader from "@/components/RouteLoader";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,25 +16,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "RateMyTA | Review Your TAs",
-  description: "Review teaching assistants, browse schools, and leave feedback to help others.",
-};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        <AppWrapper>
-          <RouteLoader /> {/* Global spinner */}
+        <SessionProvider>
           <Navbar />
+          <RouteLoader />
           {children}
-        </AppWrapper>
+        </SessionProvider>
       </body>
     </html>
-  )
+  );
 }

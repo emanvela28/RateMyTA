@@ -76,17 +76,6 @@ export default function HomePage() {
           )}
         </div>
       </div>
-
-      {/* ✅ Loading overlay */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
-          <img
-            src="/pencil.gif" // Make sure this exists in /public
-            alt="Loading..."
-            className="w-16 h-16"
-          />
-        </div>
-      )}
     </main>
   )
 }

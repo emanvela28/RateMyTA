@@ -1,0 +1,5 @@
+Need to do:
+    * Implement a uniform loading screen
+    * Add images make it look better
+    * Admin page
+        

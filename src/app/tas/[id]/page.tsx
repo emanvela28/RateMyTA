@@ -1,36 +1,36 @@
-import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
-import NavButtons from '@/components/NavButtons'
-import ReviewList from '@/components/ReviewList'
-import type { TA, Review, School } from '@prisma/client'
+import { prisma } from '@/lib/prisma';
+import Link from 'next/link';
+import NavButtons from '@/components/NavButtons';
+import ReviewList from '@/components/ReviewList';
+import type { TA, Review, School } from '@prisma/client';
+import ReportButton from '@/components/ReportButton';
 
 type FullTA = {
-  id: number
-  name: string
-  department: string
-  pending: boolean
-  schoolId: number
-  school: School
-  reviews: Review[]
-}
+  id: number;
+  name: string;
+  department: string;
+  pending: boolean;
+  schoolId: number;
+  school: School;
+  reviews: Review[];
+};
 
 type Props = {
-  params: { id: string }
-}
+  params: { id: string };
+};
 
 export default async function TAPage({ params }: Props) {
-  // Await the params promise before accessing its properties
-  const { id } = await params
-  const taId = Number(id)
+  const { id } = await params;
+  const taId = Number(id);
 
-  const ta = await prisma.tA.findUnique({
+  const ta = (await prisma.tA.findUnique({
     where: { id: taId },
     include: {
       school: true,
       reviews: true,
     },
-  }) as FullTA
-  
+  })) as FullTA;
+
   if (!ta || ta.pending) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
@@ -41,50 +41,55 @@ export default async function TAPage({ params }: Props) {
           <p className="text-gray-600 text-sm">
             Once it's approved by an admin, the reviews and profile will be visible.
           </p>
-
           <div className="mt-6">
             <NavButtons schoolId={ta?.schoolId} />
           </div>
         </div>
       </main>
-    )
+    );
   }
 
-  const reviewCount = ta.reviews.length
+  const reviewCount = ta.reviews.length;
   const averageRating = reviewCount
     ? (ta.reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1)
-    : 'N/A'
+    : 'N/A';
   const averageDifficulty = reviewCount
     ? (ta.reviews.reduce((sum, r) => sum + r.difficulty, 0) / reviewCount).toFixed(1)
-    : 'N/A'
-  const wouldTakeAgainCount = ta.reviews.filter((r) => r.takeAgain).length
+    : 'N/A';
+  const wouldTakeAgainCount = ta.reviews.filter((r) => r.takeAgain).length;
   const wouldTakeAgainPercent =
-    reviewCount > 0 ? Math.round((wouldTakeAgainCount / reviewCount) * 100) : 'N/A'
+    reviewCount > 0 ? Math.round((wouldTakeAgainCount / reviewCount) * 100) : 'N/A';
 
-  const courseCodes = [...new Set(ta.reviews.map((r) => r.courseCode))]
+  const courseCodes = [...new Set(ta.reviews.map((r) => r.courseCode))];
 
   const ratingDist = [1, 2, 3, 4, 5].map((score) => ({
     score,
     count: ta.reviews.filter((r) => r.rating === score).length,
-  }))
+  }));
 
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-8 space-y-6">
-        {/* TA Info */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">{ta.name}</h1>
-          <p className="text-gray-600">{ta.department}</p>
-          <p className="text-sm text-gray-500 mb-4">
-            Teaching at: {ta.school.name} ({ta.school.location})
-          </p>
+        {/* TA Info and Buttons */}
+        <div className="flex justify-between items-start">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900">{ta.name}</h1>
+            <p className="text-gray-600">{ta.department}</p>
+            <p className="text-sm text-gray-500 mb-4">
+              Teaching at: {ta.school.name} ({ta.school.location})
+            </p>
 
-          <Link
-            href={`/tas/${ta.id}/review`}
-            className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-          >
-            Leave a Review
-          </Link>
+            <Link
+              href={`/tas/${ta.id}/review`}
+              className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+            >
+              Leave a Review
+            </Link>
+          </div>
+
+          <div className="flex justify-end">
+            <ReportButton targetType="TA" targetId={taId} />
+          </div>
         </div>
 
         {/* Stats Section */}
@@ -125,8 +130,9 @@ export default async function TAPage({ params }: Props) {
         {/* Reviews */}
         <ReviewList reviews={ta.reviews} courseCodes={courseCodes} />
 
+        {/* Navigation Buttons */}
         <NavButtons taId={ta.id} schoolId={ta.schoolId} />
       </div>
     </main>
-  )
+  );
 }

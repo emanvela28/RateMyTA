@@ -116,13 +116,22 @@ export default function NewTAReview() {
   }, 300)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setForm(prev => ({ ...prev, [name]: value }))
-    
-    if (name === 'name') {
-      searchTA(value)
+    const { name, value } = e.target;
+  
+    let newValue = value;
+  
+    // Auto-format the course code input
+    if (name === 'courseCode') {
+      newValue = value.toUpperCase().replace(/\s+/g, '');
     }
-  }
+  
+    setForm(prev => ({ ...prev, [name]: newValue }));
+  
+    if (name === 'name') {
+      searchTA(value);
+    }
+  };
+  
 
   const handleCommentChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target
