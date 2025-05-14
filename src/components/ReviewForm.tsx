@@ -7,9 +7,9 @@ import { useSession } from 'next-auth/react'
 const tagsList = [
   'Tough Grader', 'Get Ready To Read', 'Participation Matters', 'Extra Credit',
   'Group Projects', 'Amazing Lectures', 'Clear Grading Criteria', 'Gives Good Feedback',
-  'Inspirational', 'Lots Of Homework', 'Hilarious', 'Beware Of Pop Quizzes',
-  'So Many Papers', 'Caring', 'Respected', 'Lecture Heavy', 'Test Heavy',
-  'Graded By Few Things', 'Accessible Outside Class', 'Online Savvy',
+  'Lots Of Homework',
+  'So Many Papers', 'Caring','Lecture Heavy', 'Test Heavy',
+  'Graded By Few Things', 'Accessible Outside Class',
 ]
 
 export default function ReviewForm({ taId }: { taId: number }) {

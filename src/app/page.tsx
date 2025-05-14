@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+
 
 type School = {
   id: number
@@ -40,25 +42,26 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#eef3fb] to-[#dee9f8] flex items-center justify-center px-4 relative">
-      <div className="w-full max-w-xl text-center space-y-6">
-        <div>
+      <div
+        className="w-full h-[600px] bg-cover bg-center bg-no-repeat flex items-center justify-center px-4"
+        style={{ backgroundImage: "url('/charles-deloye-2RouMSg9Rnw-unsplash.jpg')" }}
+      >
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 max-w-xl w-full text-center shadow-lg">
           <h1 className="text-5xl font-extrabold text-gray-900">RateMyTA</h1>
           <p className="text-lg text-gray-700 mt-2">
             Choose your school, find your TA, and help students everywhere.
           </p>
-        </div>
 
-        <div className="relative">
           <input
             type="text"
             placeholder="Search for your school..."
-            className="w-full py-4 px-6 text-lg rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="mt-6 w-full py-4 px-6 text-lg rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
 
           {search.length > 0 && (
-            <ul className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg overflow-hidden z-10">
+            <ul className="mt-2 bg-white rounded-xl shadow-lg overflow-hidden z-10 text-left">
               {filtered.map((school) => (
                 <li
                   key={school.id}
@@ -76,6 +79,7 @@ export default function HomePage() {
           )}
         </div>
       </div>
+
     </main>
   )
 }

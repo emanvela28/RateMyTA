@@ -41,22 +41,38 @@ export default async function SchoolPage({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8">
-        <h1 className="text-4xl font-bold text-center text-gray-900 mb-2">{school.name}</h1>
-        <p className="text-center text-gray-600 mb-6">{school.location}</p>
+    <main className="min-h-screen">
+      {/* Add padding-top to push content below nav bar */}
+      <div className="pt-16"> {/* Adjust this value based on your nav bar height */}
+        <div 
+          className="fixed inset-0 -z-10" // This will position the background behind everything
+          style={{
+            backgroundImage: "url('/inaki-del-olmo-NIJuEQw0RKg-unsplash.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+        
+        {/* Content container */}
+        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4"> {/* Adjust min-h calculation based on nav bar height */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 max-w-3xl w-full text-center shadow-lg">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{school.name}</h1>
+            <p className="text-gray-600 mb-6">{school.location}</p>
 
-        <div className="flex justify-center mb-6">
-          <Link
-            href={`/schools/${school.id}/new-ta`}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition"
-          >
-            Add a TA & Review
-          </Link>
+            <div className="flex justify-center mb-6">
+              <Link
+                href={`/schools/${school.id}/new-ta`}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition"
+              >
+                Add a TA & Review
+              </Link>
+            </div>
+
+            <TASectionClient schoolId={school.id} tas={school.tas} />
+            <NavButtons />
+          </div>
         </div>
-
-        <TASectionClient schoolId={school.id} tas={school.tas} />
-        <NavButtons />
       </div>
     </main>
   )
