@@ -47,7 +47,7 @@ export default async function SchoolPage({ params }: PageProps) {
         <div 
           className="fixed inset-0 -z-10" // This will position the background behind everything
           style={{
-            backgroundImage: "url('/inaki-del-olmo-NIJuEQw0RKg-unsplash.jpg')",
+            backgroundImage: "url('/priscilla-du-preez-ggeZ9oyI-PE-unsplash.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",

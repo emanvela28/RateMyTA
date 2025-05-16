@@ -41,11 +41,16 @@ export default function HomePage() {
   
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#eef3fb] to-[#dee9f8] flex items-center justify-center px-4 relative">
-      <div
-        className="w-full h-[600px] bg-cover bg-center bg-no-repeat flex items-center justify-center px-4"
+    <main className="min-h-screen bg-gradient-to-b from-[#eef3fb] to-[#dee9f8] relative">
+      {/* Full-screen background image */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/charles-deloye-2RouMSg9Rnw-unsplash.jpg')" }}
-      >
+      />
+    
+      
+      {/* Content container */}
+      <div className="relative min-h-screen flex items-center justify-center px-4 py-16 z-10">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 max-w-xl w-full text-center shadow-lg">
           <h1 className="text-5xl font-extrabold text-gray-900">RateMyTA</h1>
           <p className="text-lg text-gray-700 mt-2">
@@ -79,7 +84,6 @@ export default function HomePage() {
           )}
         </div>
       </div>
-
     </main>
   )
 }

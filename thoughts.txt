@@ -4,7 +4,11 @@ Need to do:
         * Home page (done)
         * Need to work on styling the school page
         * Review form should have some interesting icon
-        * About needs to be more interesting
+        * About needs to be more interesting (done)
     * Admin page (done)
     * Deploy
         
+
+
+debugging
+* Reported reviews not coming through

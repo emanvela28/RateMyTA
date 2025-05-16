@@ -23,57 +23,72 @@ export default async function SearchPage({ searchParams }: Props) {
   ])
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-6">Search Results for "{query}"</h1>
+    <main className="min-h-screen bg-gradient-to-b from-[#eef3fb] to-[#dee9f8] relative">
+      {/* Background */}
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
+        style={{ backgroundImage: "url('/tra-nguyen-TVSRWmnW8Us-unsplash.jpg')" }}
+      />
 
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-2">TAs</h2>
-        {tas.length === 0 ? (
-          <p className="text-gray-500">No matching TAs found.</p>
-        ) : (
-          <ul className="space-y-4">
-            {tas.map((ta) => (
-              <li key={ta.id} className="bg-white p-4 shadow rounded">
-                <Link
-                  href={`/tas/${ta.id}`}
-                  className="font-semibold text-blue-600 hover:underline text-lg"
-                >
-                  {ta.name}
-                </Link>
-                <p className="text-sm text-gray-500">
-                  Teaching at{' '}
+      {/* Frosted Glass Card */}
+      <div className="relative z-10 max-w-3xl mx-auto px-10 py-12 sm:px-6 sm:py-8 bg-white/70 backdrop-blur-md rounded-2xl shadow-2xl mt-16 border border-gray-300">
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-10 text-center">
+          Search Results for &quot;{query}&quot;
+        </h1>
+
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <span>🎓</span> TAs
+          </h2>
+          {tas.length === 0 ? (
+            <p className="text-lg text-gray-600">No matching TAs found.</p>
+          ) : (
+            <ul className="space-y-5">
+              {tas.map((ta) => (
+                <li key={ta.id} className="bg-white/90 p-5 shadow-md rounded-xl hover:shadow-lg transition-shadow border border-gray-200">
                   <Link
-                    href={`/schools/${ta.schoolId}`}
-                    className="text-blue-500 hover:underline"
+                    href={`/tas/${ta.id}`}
+                    className="font-semibold text-blue-600 hover:underline text-xl"
                   >
-                    {ta.school.name}
+                    {ta.name}
                   </Link>
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                  <p className="text-base text-gray-500 mt-2">
+                    Teaching at{' '}
+                    <Link
+                      href={`/schools/${ta.schoolId}`}
+                      className="text-blue-500 hover:underline"
+                    >
+                      {ta.school.name}
+                    </Link>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      <div>
-        <h2 className="text-lg font-semibold mb-2">Schools</h2>
-        {schools.length === 0 ? (
-          <p className="text-gray-500">No matching schools found.</p>
-        ) : (
-          <ul className="space-y-4">
-            {schools.map((school) => (
-              <li key={school.id} className="bg-white p-4 shadow rounded">
-                <Link
-                  href={`/schools/${school.id}`}
-                  className="font-semibold text-blue-600 hover:underline text-lg"
-                >
-                  {school.name}
-                </Link>
-                <p className="text-sm text-gray-500">{school.location}</p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <span>🏫</span> Schools
+          </h2>
+          {schools.length === 0 ? (
+            <p className="text-lg text-gray-600">No matching schools found.</p>
+          ) : (
+            <ul className="space-y-5">
+              {schools.map((school) => (
+                <li key={school.id} className="bg-white/90 p-5 shadow-md rounded-xl hover:shadow-lg transition-shadow border border-gray-200">
+                  <Link
+                    href={`/schools/${school.id}`}
+                    className="font-semibold text-blue-600 hover:underline text-xl"
+                  >
+                    {school.name}
+                  </Link>
+                  <p className="text-base text-gray-500 mt-2">{school.location}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </main>
   )
